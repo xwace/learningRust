@@ -31,6 +31,22 @@ impl B for C {
   }
 }
 
+//列表切片赋予新特性
+use std::io::{self, Write};
+
+trait EncodableLayout {
+    fn encode_layout<W: Write>(&self, writer: &mut W) -> io::Result<()>;
+}
+
+impl EncodableLayout for [f32] {
+    fn encode_layout<W: Write>(&self, writer: &mut W) -> io::Result<()> {
+        for &value in self {
+            writer.write_all(&value.to_le_bytes())?;
+        }
+        Ok(())
+    }
+}
+
 fn main(){
     let words = String::from("Hello world!");
     say_hello(&words);
@@ -39,4 +55,9 @@ fn main(){
     let c = C{};
     c.func_in_b();
     c.func_in_a();
+
+    let data: [f32;3] = [1.0_f32, 2.0_f32, 3.0_f32];
+    let mut buffer: Vec<u8> = vec![];
+    data.encode_layout(&mut buffer);
+    println!("{:?}",buffer);
 }
